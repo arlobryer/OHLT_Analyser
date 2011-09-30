@@ -13,7 +13,7 @@ def run(chain):
         # here you do whatever analysis etc.
         if ev.Electrons is not None:
             for ele in ev.Electrons:
-                print ele.getPhi()
+                print ele.ElectronPassed()
 
 
 
