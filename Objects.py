@@ -1,4 +1,20 @@
-class Electron:
+class Particle:
+    def __init__(self):
+        self.Eta = None
+        self.Phi = None
+        self.Pt = None
+        
+    def getPhi(self):
+        return self.Phi
+
+    def getEta(self):
+        return self.Eta
+
+    def getPt(self):
+        return self.Pt
+    
+
+class Electron(Particle):
     def __init__(self, E, Et, eta, phi,
                  HforHoverE, NewSC,
                  PixSeeds, L1Iso,
@@ -72,7 +88,7 @@ class Electron:
                
                
 
-class pfTau:
+class pfTau(Particle):
     def __init__(self, Pt, eta, phi, leadTrkPt, TrkIso, GammaIso):
         self.Pt = Pt
         self.Eta = eta
@@ -92,14 +108,14 @@ class pfTau:
         return t
 
 
-class UnCorJets:
+class UnCorJets(Particle):
     def __init__(self, Pt, phi, eta):
         self.Pt = Pt
         self.Phi = phi
         self.Eta = eta
 
 
-class CorJets:
+class CorJets(Particle):
     """should probably inherit from UncorJets?"""
     def __init__(self, E, Pt, eta, emf):
         self.E = E

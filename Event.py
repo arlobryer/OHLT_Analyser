@@ -1,28 +1,9 @@
-#!/usr/bin/env python
-
-#small python analyser
-
-
-import ROOT as r
 import math as m
 import time
 import sys
-import glob
 t0 = time.clock()
 
 import Objects as obj
-
-def getChain(files, chainName):
-    c = r.TChain(chainName)
-    for f in  files:
-        c.AddFile(f)
-    return c
-
-
-def file_get(path, fname):
-    files = glob.glob(path + fname)
-    return files
-
 
 
 class Event:
@@ -58,7 +39,8 @@ class Event:
         self.EleDphi = getattr(c, 'ohEleDphi')
         # muons
         self.nMuL3 = getattr(c, 'NohMuL3')
-        self.MuL3Eta = getattr(c, 'ohMuL3Pt')
+        self.MuL3Pt = getattr(c, 'ohMuL3Pt')
+        self.MuL3Eta = getattr(c, 'ohMuL3Eta')
         self.MuL3Dr = getattr(c, 'ohMuL3Dr')
         self.MuL3Iso = getattr(c, 'ohMuL3Iso')
         self.MuL3L2idx = getattr(c, 'ohMuL3L2idx')
@@ -68,7 +50,7 @@ class Event:
         self.MuL2Pt = getattr(c, 'ohMuL2Pt')
         self.MuL2Iso = getattr(c, 'ohMuL2Iso')
         self.MuL2Phi = getattr(c, 'ohMuL2Phi')
-        self.muL2Eta = getattr(c, 'ohMuL2Eta')
+        self.MuL2Eta = getattr(c, 'ohMuL2Eta')
         self.nMuL1 = getattr(c, 'NL1Mu')
         self.MuL1Pt = getattr(c, 'L1MuPt')
         self.MuL1Phi = getattr(c, 'L1MuPhi')
@@ -138,7 +120,8 @@ class Event:
         self.CorJets = corJ
 
 
-
+        # Not doing muons right now...not clear how to define the object. Probably
+        #best to consider various 'levels' (L1, L2, L3)...
 
     def SumCorHtPassed(self, thresh, jet_thresh, eta_thres):
         sumHT = 0.
@@ -148,60 +131,76 @@ class Event:
         if sumHT >= thresh:
             return True
                
-    def pfMHTPassed(thres):
+    def pfMHTPassed(self, thres):
         if pfMHT >= thresh:
             return True
 
-    
+    def OneMuonPassed(muThresh, dr, iso, etal2, etal3, minNhits, minNstats):
+        rcL1 = 0
+        rcL2 = 0
+        rcL3 = 0
+        rcL1L2L3 = 0
+        nL1mu = 8
+        L1MinQuality = 1
+        L1MaxQuality = 7
+        doL1L2match = False
+
+        L3MuCandIdForOnia = []
+        for i in range(10):
+            L3MuCanIdForOnia.append(-1)
+
+        for mu in range(self.nMuL3):
+            bestL1L2drMatchInd = -1
+            bestL1L2drmatch = 999.
+
+            if(m.fabs(self.MuL3Eta[mu]) < etal3 and
+               self.MuL3Pt[mu] > muThresh[2] and
+               self.MuL3Dr[mu] < dr and
+               self.MuL3Iso[mu] >= iso):
+                rcL3+=1
+
+            j = self.MuL3L2idx[mu]
+
+            if(m.fabs(self.MuL2Eta[j]) < etal2):
+                if (m.fabs(self.MuL2Eta[j]) < 0.9 or
+                    (m.fabs(self.MuL2Eta[j]) > 1.5 and
+                     m.fabs(self.MuL2Eta[j]) < 2.1)
+                    # or (MuL2Nhits[j] > minNhits and muL2Nstat[j] > minNstats)
+                    ):
+                    if(self.MuL2Pt[j] > muThresh[1] and self.MuL2Iso[j] >= iso):
+                        rcL2+=1
+
+                        for k in range(self.nMuL1):
+                            if (self.MuL1Pt[k] < muThresh[0]):
+                                continue
+
+                            deltaphi = m.fabs(self.MuL2Phi[j] - self.MuL1Phi[k])
+                            if deltaphi > 3.14159:
+                                deltaphi = (2.0 * 3.14150) - deltaphi
+
+                            deltarl1l2 = m.sqrt((self.MuL2Eta[j] - self.MuL1Eta[k]) *
+                                               (self.MuL2Eta[j] - self.MuL2Eta[k]) +
+                                               (deltaphi * deltaphi))
+                            if deltarl1l2 < bestl1l2drmatch:
+                                bestl1l2drMatchInd = k
+                                bestl1l2drmatch = deltarl1l2
+
+                        if doL1L2match:
+                            pass
+                            #some stuff is in here but the bool is set to false in
+                            #OHLT... don't worry about it for now.
+
+                        else:
+                            L3MuCandIdForonia[rcL1L2L3] = mu
+                            rcL1L2L3+=1
+
+            return rcL1L2L3
                 
-                
-    def TauPFToCaloMatching(eta, phi):
-        for i in range(self.nJetCal):
-            if(self.JetCalPt[i] < 8):
-                continue
-            deltaphi = m.fabs(phi - self.JetCalPhi[i])
-            if deltaphi > 3.14159:
-                deltaphi = (2.0 * 3.14159) - deltaphi
-            deltaeta = m.fabs(eta - self.JetCalEta[i])
-            if (deltaeta < 0.3 and deltaphi < 0.3):
-                return True
-            else:
-                return False
-
-   
 
 
-def deltaPhi(phi1, phi2):
-    dphi = m.fabs(phi1 - phi2)
-    if dphi > 6.283185308:
-        dphi -= 6.283185308
-    if (dphi > 3.141592654):
-        dphi = 6.283185308 - dphi
-    return dphi
 
-def deltaEta(eta1, eta2):
-    return m.fabs(eta1 - eta2)
     
 
 
-def run(chain):
-    for i in range(chain.GetEntries()):
-        if i%1000==0:
-            print 'Event: ' + str(i)
-        chain.GetEntry(i)
-        ev = Event(chain)
-        # here you do whatever analysis etc.
-        if ev.Electrons is not None:
-            for e in ev.Electrons:
-                print e.E
-
-
-
-if __name__=='__main__':
-    elehad_path = "/vols/cms02/aeg04/HLTntup/r163374_2011A-v1/r163374_ElectronHad_2011A/"
-    fname = 'openhlt_*.root'
-    elehadfiles = file_get(elehad_path, fname)
-    chain = getChain(elehadfiles, 'HltTree')
-    run(chain)
 
 
