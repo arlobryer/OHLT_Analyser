@@ -1,4 +1,5 @@
 import math as m
+import Helpers as h
 
 class Particle:
     def __init__(self):
@@ -40,8 +41,15 @@ class Electron(Particle):
         self.HoverE = self.HforHoverE/self.E
         self.isBar = False
         self.isEC = False
-        # L1dupl bs needs to be added
-
+        if self.L1Iso == 1:
+            self.L1Dupl = False
+        elif self.L1Iso == 0:
+            self.L1Dupl = True
+        # L1dupl bs needs to be added - there's a massive bug in OHLT to evaluate this,
+        #sigh...emulate it since we need the same behaviour...
+        
+            
+    
     def ElectronPassed(self, Et = 10, L1iso = 0,
                                    Tisobarrel = 999., Tisoendcap = 999.,
                                    Tisoratiobarrel = 0.2, Tisoratioendcap = 0.2,
@@ -63,7 +71,9 @@ class Electron(Particle):
             self.isEC = True
 
         if(self.Et > Et and m.fabs(self.Eta < endcapeta) and
-           self.NewSC <= 1 and self.PixSeeds > 0 and self.L1Iso >= L1iso):
+           self.NewSC <= 1 and self.PixSeeds > 0 and
+           self.L1Iso >= L1iso and
+           self.L1Dupl == False):
             # and dupl condition
             if ((self.isBar and
                  self.Hiso/self.Et < HisooverETbarrel and
@@ -105,23 +115,25 @@ class pfTau(Particle):
         self.GammaIso = GammaIso
 
 
-    def PFTauPassedNoMuonIDNoEleID(Et, L25TrkPt, L3TrkIso, L3GammaIso, matchPart):
+    def PFTauPassedNoMuonIDNoEleID(self, matchParts, Et = 15, L25TrkPt = 3,
+                                   L3TrkIso = 1.5, L3GammaIso = 999.,
+                                   ):
         if(self.Pt >= Et and m.fabs(self.Eta) < 2.5
-               and self.leadTrackPt >= L25TrkPt
-               and self.uTrkIso < L3TrkIso
+               and self.leadTrkPt >= L25TrkPt
+               and self.TrkIso < L3TrkIso
                and self.GammaIso < L3GammaIso
-               and ParticleMatching(self.pfTauEta[i],pfTauPhi[i], matchPart)):
+               and h.ParticleMatching(self.Eta, self.Phi, matchParts)):
             return True
 
 
-class UnCorJets(Particle):
+class UnCorJet(Particle):
     def __init__(self, Pt, phi, eta):
         self.Pt = Pt
         self.Phi = phi
         self.Eta = eta
 
 
-class CorJets(Particle):
+class CorJet(Particle):
     """should probably inherit from UncorJets?"""
     def __init__(self, E, Pt, eta, emf):
         self.E = E

@@ -108,14 +108,14 @@ class Event:
     def setUnCorJets(self):
         uncorJ=[]
         for i in range (self.nJetCal):
-            uncorJ.append(obj.UnCorJets(self.JetCalPt[i], self.JetCalPhi[i],
+            uncorJ.append(obj.UnCorJet(self.JetCalPt[i], self.JetCalPhi[i],
                                         self.JetCalEta[i]))
         self.UnCorJets = uncorJ
 
     def setCorJets(self):
         corJ=[]
         for i in range (self.nJetCorCal):
-            corJ.append(obj.CorJets(self.JetCorCalE[i], self.JetCorCalPt[i],
+            corJ.append(obj.CorJet(self.JetCorCalE[i], self.JetCorCalPt[i],
                                     self.JetCorCalEta[i], self.JetCorCalEMF[i]))
         self.CorJets = corJ
 
@@ -123,19 +123,27 @@ class Event:
         # Not doing muons right now...not clear how to define the object. Probably
         #best to consider various 'levels' (L1, L2, L3)...
 
-    def SumCorHtPassed(self, thresh, jet_thresh, eta_thres):
-        sumHT = 0.
+    def SumCorHtPassed(self, thresh, jet_thresh = 40., eta_thresh = 2.4):
+        self.sumHT = 0.
         for jet in self.CorJets:
-            if(jet.ID() and jet.Pt > jet_thresh and m.fabs(jet.Eta) > eta_thresh):
-                sumHT += jet.E/m.cosh(jet.Eta)
-        if sumHT >= thresh:
+            # print jet.ID()
+            # print jet.getPt()
+            # print jet.getEta()
+            if(jet.ID() and jet.getPt() > jet_thresh and m.fabs(jet.getEta()) > eta_thresh):
+                self.sumHT += jet.E/m.cosh(jet.getEta())
+                # print 'SumHT: ' + str(sumHT)
+        if self.sumHT >= thresh:
             return True
+        else:
+            return False
                
     def pfMHTPassed(self, thres):
         if pfMHT >= thresh:
             return True
 
-    def OneMuonPassed(muThresh, dr, iso, etal2, etal3, minNhits, minNstats):
+    def OneMuonPassed(self, muThresh = [5.,4.,3], dr = 2., iso = 0.,
+                      etal2 = 2.5, etal3 = 2.5,
+                      minNhits = 0, minNstats = 0):
         rcL1 = 0
         rcL2 = 0
         rcL3 = 0
@@ -147,7 +155,7 @@ class Event:
 
         L3MuCandIdForOnia = []
         for i in range(10):
-            L3MuCanIdForOnia.append(-1)
+            L3MuCandIdForOnia.append(-1)
 
         for mu in range(self.nMuL3):
             bestL1L2drMatchInd = -1
@@ -177,13 +185,12 @@ class Event:
                             deltaphi = m.fabs(self.MuL2Phi[j] - self.MuL1Phi[k])
                             if deltaphi > 3.14159:
                                 deltaphi = (2.0 * 3.14150) - deltaphi
-
                             deltarl1l2 = m.sqrt((self.MuL2Eta[j] - self.MuL1Eta[k]) *
-                                               (self.MuL2Eta[j] - self.MuL2Eta[k]) +
+                                               (self.MuL2Eta[j] - self.MuL1Eta[k]) +
                                                (deltaphi * deltaphi))
-                            if deltarl1l2 < bestl1l2drmatch:
-                                bestl1l2drMatchInd = k
-                                bestl1l2drmatch = deltarl1l2
+                            if deltarl1l2 < bestL1L2drmatch:
+                                bestL1L2drMatchInd = k
+                                bestL1L2drmatch = deltarl1l2
 
                         if doL1L2match:
                             pass
@@ -191,7 +198,7 @@ class Event:
                             #OHLT... don't worry about it for now.
 
                         else:
-                            L3MuCandIdForonia[rcL1L2L3] = mu
+                            L3MuCandIdForOnia[rcL1L2L3] = mu
                             rcL1L2L3+=1
 
             return rcL1L2L3

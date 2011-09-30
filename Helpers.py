@@ -28,12 +28,14 @@ def deltaPhi(phi1, phi2):
 def deltaEta(eta1, eta2):
     return m.fabs(eta1 - eta2)
 
-def ParticleMatching(eta, phi, part, partsPt = 8, r = 0.3):
-    if Part.getPt() < partsPt:
-        return False
-    deltaphi = m.fabs(phi - part.getPhi())
-    if deltaphi > 3.14159:
-        deltaphi = (2.0 * 3.14159) - deltaphi
+def ParticleMatching(eta, phi, parts, partsPt = 8, r = 0.3):
+    """Basically a generalised version of OpenHltTauPFToCaloMatching"""
+    for part in parts:
+        if part.getPt() < partsPt: #seemingly arbitrary value taken from ohlt
+            continue
+        deltaphi = m.fabs(phi - part.getPhi())
+        if deltaphi > 3.14159:
+            deltaphi = (2.0 * 3.14159) - deltaphi
         deltaeta = m.fabs(eta - part.getEta())
         if (deltaeta < r and deltaphi < r):
             #note that this actually defines a SQUARE (not a circle as you'd
@@ -42,3 +44,4 @@ def ParticleMatching(eta, phi, part, partsPt = 8, r = 0.3):
         else:
             return False
         
+

@@ -13,9 +13,18 @@ def run(chain):
         # here you do whatever analysis etc.
         if ev.Electrons is not None:
             for ele in ev.Electrons:
-                print ele.ElectronPassed()
+                pass
+                # print ele.ElectronPassed()
+        if ev.pfTau is not None:
+            for t in ev.pfTau:
+                pass
+                # print t.PFTauPassedNoMuonIDNoEleID(ev.UnCorJets)
+        if ev.OneMuonPassed():
+            pass
 
-
+        if ev.SumCorHtPassed(thresh = 350):
+            print ev.sumHT
+        
 
 if __name__=='__main__':
     elehad_path = "/vols/cms02/aeg04/HLTntup/r163374_2011A-v1/r163374_ElectronHad_2011A/"
