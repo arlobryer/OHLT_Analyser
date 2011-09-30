@@ -38,14 +38,16 @@ class Electron(Particle):
         self.HoverE = self.HforHoverE/self.E
         # L1dupl bs needs to be added
 
-
-        def OneElectronSamHarperPassed(Et, L1iso, Tisobarrel, Tisoendcap,
-                                 Tisoratiobarrel, Tisoratioendcap,
-                                 HisooverETbarrel, HisooverETendcap,
-                                 EisooverETbarrel, EisooverETendcap,
-                                 hoverEbarrel, hoverEendcap, clushapebarrel,
-                                 clusshapeendcap, r9barrel, r9endcap, detabarrel,
-                                 detaendcap, dphibarrel, dphiendcap):
+        def OneElectronSamHarperPassed(self, Et = 10, L1iso = 0,
+                                       Tisobarrel = 999., Tisoendcap = 999.,
+                                       Tisoratiobarrel = 0.2, Tisoratioendcap = 0.2,
+                                       HisooverETbarrel = 0.2, HisooverETendcap = 0.2,
+                                       EisooverETbarrel = 0.2, EisooverETendcap = 0.2,
+                                       hoverEbarrel = 0.15, hoverEendcap = 0.10,
+                                       clushapebarrel = 0.024, clusshapeendcap = 0.040,
+                                       r9barrel = 0.98, r9endcap = 1.0,
+                                       detabarrel = 0.01, detaendcap = 0.01,
+                                       dphibarrel = 0.15, dphiendcap = 0.10):
 
 
             barreleta = 1.479
@@ -98,14 +100,13 @@ class pfTau(Particle):
         self.GammaIso = GammaIso
 
 
-    def PFTauPassedNoMuonIDNoEleID(Et, L25TrkPt, L3TrkIso, L3GammaIso):
+    def PFTauPassedNoMuonIDNoEleID(Et, L25TrkPt, L3TrkIso, L3GammaIso, matchPart):
         if(self.Pt >= Et and m.fabs(self.Eta) < 2.5
                and self.leadTrackPt >= L25TrkPt
                and self.uTrkIso < L3TrkIso
                and self.GammaIso < L3GammaIso
-               and TauPFtoCaloMatching(self.pfTauEta[i],pfTauPhi[i])):
-                t += 1
-        return t
+               and ParticleMatching(self.pfTauEta[i],pfTauPhi[i], matchPart)):
+            return True
 
 
 class UnCorJets(Particle):
