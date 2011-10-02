@@ -8,7 +8,12 @@ import Objects as obj
 
 class Event:
     def __init__(self, c):
+        # L1 trigger bits
+        self.L1_HTT100 = getattr(c, "L1_HTT100")
+        self.L1_ETM30 = getattr(c, "L1_ETM30")
+        
         self.pfMHT = getattr(c, "pfMHT")
+        self.sumHT = 0.
         # cor jets
         self.nJetCorCal = getattr(c, 'NohJetCorCal')
         self.JetCorCalE = getattr(c, 'ohJetCorCalE')
@@ -123,13 +128,13 @@ class Event:
         # Not doing muons right now...not clear how to define the object. Probably
         #best to consider various 'levels' (L1, L2, L3)...
 
-    def SumCorHtPassed(self, thresh, jet_thresh = 40., eta_thresh = 2.4):
-        self.sumHT = 0.
+    def SumCorHtPassed(self, thresh, jet_thresh = 40., eta_thresh = 3.0):
         for jet in self.CorJets:
-            # print jet.ID()
-            # print jet.getPt()
-            # print jet.getEta()
-            if(jet.ID() and jet.getPt() > jet_thresh and m.fabs(jet.getEta()) > eta_thresh):
+            # print "jetID: " + str(jet.ID())
+            # print "jet Pt: " + str(jet.getPt())
+            # print 'jet Eta: ' + str(m.fabs(jet.getEta()))
+            if(jet.ID() and jet.getPt() > jet_thresh and m.fabs(jet.getEta()) < eta_thresh):
+                # print 'THIS JET PASSED'
                 self.sumHT += jet.E/m.cosh(jet.getEta())
                 # print 'SumHT: ' + str(sumHT)
         if self.sumHT >= thresh:
@@ -137,8 +142,8 @@ class Event:
         else:
             return False
                
-    def pfMHTPassed(self, thres):
-        if pfMHT >= thresh:
+    def pfMHTPassed(self, thresh):
+        if self.pfMHT >= thresh:
             return True
 
     def OneMuonPassed(self, muThresh = [5.,4.,3], dr = 2., iso = 0.,

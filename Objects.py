@@ -115,7 +115,7 @@ class pfTau(Particle):
         self.GammaIso = GammaIso
 
 
-    def PFTauPassedNoMuonIDNoEleID(self, matchParts, Et = 15, L25TrkPt = 3,
+    def PFTauPassedNoMuonIDNoEleID(self, matchParts, Et = 10, L25TrkPt = 3,
                                    L3TrkIso = 1.5, L3GammaIso = 999.,
                                    ):
         if(self.Pt >= Et and m.fabs(self.Eta) < 2.5
