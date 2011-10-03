@@ -1,14 +1,15 @@
 #!/usr/bin/env python
 #small python analyser
-
+import ROOT as r
 import Event as e
 import Helpers as h
 import AGB_TriggerPaths as trigs
+import os
 
 def run(chain, path = None):
-    r = chain.GetEntries()
-    # path_sets={'MET':[], 'TauX':[], 'EleHad':[], 'MuHad':[], 'HT':[]}
+    Ents = chain.GetEntries()
     path_sets={}
+    file_out = './AGB_ssdl_trigEff.root'
     path_sets['MET'] = {'pfmht50_ele5':trigs.PFMHT50_Ele5, 'pfmht50_mu5':trigs.PFMHT50_Mu5,
                       'pfmht50_doubleTau':trigs.PFMHT50_DoubleTau10}
     path_sets['HT'] = {'ht400_pfmht50':trigs.HT400_PFMHT50}
@@ -19,20 +20,58 @@ def run(chain, path = None):
     
     if path not in path_sets.keys():
         import sys
-        'Print: You\'ve asked for a set of paths that are not defined'
+        'Print: You\'ve asked for a set of paths that are not defined.'
         sys.exit(1)
     print "Running " + path + " type paths."
 
-    
+    #Some messing around with the ROOT file/hists. Should ultimately be in
+    #it's own class.
+    if os.path.exists(file_out):
+        print 'Output file already exists. Opening it and updating contents.'
+        f_trig_eff = r.TFile(file_out, 'update')
+    else:
+        print 'Creating new output file.'
+        f_trig_eff = r.TFile(file_out, 'create')
+        for p in path_sets.keys():
+            f_trig_eff.mkdir(p)
 
+    #histograms
+    #MET ds
+    pfmht50_ele5_ht = r.TH1D('pfmht50_ele5_ht', 'pfmht50_ele5_ht', 600, 0, 600)
+    pfmht50_mu5_ht = r.TH1D('pfmht50_mu5_ht', 'pfmht50_mu5_ht', 600, 0, 600)
+    pfmht50_doubTau_ht = r.TH1D('pfmht50_doubTau_ht', 'pfmht50_doubTau_ht', 600, 0, 600)
+    #HT ds
+    ht400_pfmht50_ePt = r.TH1D('ht400_pfmht50_ePt', 'ht400_pfmht50_ePt', 200, 0, 200)
+    ht400_pfmht50_mPt = r.TH1D('ht400_pfmht50_mPt', 'ht400_pfmht50_mPt', 200, 0, 200)
+    ht400_pfmht50_tPt = r.TH1D('ht400_pfmht50_tPt', 'ht400_pfmht50_tPt', 200, 0, 200)
+    #EleHad
+    ht400_ele5_pfmht50_ht = r.TH1D('ht400_ele5_pfmht50_ht', 'ht400_ele5_pfmht50_ht', 600, 0, 600)
+    ht400_ele5_pfmht50_ePt = r.TH1D('ht400_ele5_pfmht50_ePt', 'ht400_ele5_pfmht50_ePt', 200, 0, 200)
+    ht400_ele5_pfmht50_mht = r.TH1D('ht400_ele5_pfmht50_mht', 'ht400_ele5_pfmht50_mht', 200, 0, 200)
+    ht400_ele5_mht = r.TH1D('ht400_ele5_mht', 'ht400_ele5_mht', 200, 0, 200)
+    #MuHad
+    ht400_mu5_pfmht50_ht = r.TH1D('ht400_mu5_pfmht50_ht', 'ht400_mu5_pfmht50_ht', 600, 0, 600)
+    ht400_mu5_pfmht50_mPt = r.TH1D('ht400_mu5_pfmht50_mPt', 'ht400_mu5_pfmht50_mPt', 200, 0, 200)
+    ht400_mu5_pfmht50_mht = r.TH1D('ht400_mu5_pfmht50_mht', 'ht400_mu5_pfmht50_mht', 200, 0, 200)
+    ht400_mu5_mht = r.TH1D('ht400_mu5_mht', 'ht400_mu5_mht', 200, 0, 200)
+    #tauX
+    ht400_doubTau_pfmht50_ht = r.TH1D('ht400_doubTau_pfmht50_ht', 'ht400_doubTau_pfmht50_ht',
+                                      600, 0, 600)
+    ht400_doubTau_pfmht50_tPt = r.TH1D('ht400_doubTau_pfmht50_tPt', 'ht400_doubTau_pfmht50_tPt',
+                                       200, 0, 200)
+    ht400_doubTau_pfmht50_mht = r.TH1D('ht400_doubTau_pfmht50_mht', 'ht400_doubTau_pfmht50_mht',
+                                       100, 0, 100)
+    ht400_doubTau_mht = r.TH1D('ht400_doubTau_mht', 'ht400_doubTau_mht', 100, 0, 100)
     
-    for i in range(r):
+            
+
+    #Start event loop.
+    for i in range(Ents):
         if i%1000==0:
             print 'Event: ' + str(i)
         chain.GetEntry(i)
         ev = e.Event(chain)
 
-        
         # here you do whatever analysis etc
         for name, p in path_sets[path].iteritems():
             if p(ev):
@@ -79,5 +118,5 @@ if __name__=='__main__':
     mhtchain = h.getChain(mhtfiles, 'HltTree')
     
     # run(Elechain, paths = 'EleHad')
-    run(mhtchain, path = 'MET')
+    run(Elechain, path = 'EleHad')
     

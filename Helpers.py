@@ -45,3 +45,20 @@ def ParticleMatching(eta, phi, parts, partsPt = 8, r = 0.3):
             return False
         
 
+def HtPassed(thresh, ht_type):
+        if ht_type > thresh:
+            return True
+        else:
+            return False
+ # for jet in self.CorJets:
+        #     # print "jetID: " + str(jet.ID())
+        #     # print "jet Pt: " + str(jet.getPt())
+        #     # print 'jet Eta: ' + str(m.fabs(jet.getEta()))
+        #     if(jet.ID() and jet.getPt() > jet_thresh and m.fabs(jet.getEta()) < eta_thresh):
+        #         # print 'THIS JET PASSED'
+        #         self.sumHT += jet.E/m.cosh(jet.getEta())
+        #         # print 'SumHT: ' + str(sumHT)
+        # if self.sumHT >= thresh:
+        #     return True
+        # else:
+        #     return False

@@ -20,6 +20,12 @@ class Event:
         self.JetCorCalPt = getattr(c, "ohJetCorCalPt")
         self.JetCorCalEta = getattr(c, "ohJetCorCalEta")
         self.JetCorCalEMF = getattr(c, "ohJetCorCalEMF")
+        #reco cor jets
+        self.nrecoJetCorCal = getattr(c, 'NrecoJetCorCal')
+        self.recoJetCorCalE = getattr(c, 'recoJetCorCalE')
+        self.recoJetCorCalPt = getattr(c, 'recoJetCorCalPt')
+        self.recoJetCorCalEta = getattr(c, 'recoJetCorCalEta')
+        self.recoJetCorCalEMF = getattr(c, 'recoJetCorCalEMF')
         # uncor jets
         self.nJetCal = getattr(c, 'NohJetCal')
         self.JetCalPt = getattr(c, 'ohJetCalPt')
@@ -42,6 +48,11 @@ class Event:
         self.EleR9 = getattr(c, 'ohEleR9')
         self.EleDeta = getattr(c, 'ohEleDeta')
         self.EleDphi = getattr(c, 'ohEleDphi')
+        #reco electrons
+        self.nRecoEle = getattr(c, 'NrecoElec')
+        self.recoElePt = getattr(c, 'recoElecPt')
+        self.recoElePhi = getattr(c, 'recoElecPhi')
+        self.recoEleEta = getattr(c, 'recoElecEta')
         # muons
         self.nMuL3 = getattr(c, 'NohMuL3')
         self.MuL3Pt = getattr(c, 'ohMuL3Pt')
@@ -50,6 +61,11 @@ class Event:
         self.MuL3Iso = getattr(c, 'ohMuL3Iso')
         self.MuL3L2idx = getattr(c, 'ohMuL3L2idx')
         self.MuL2Eta = getattr(c, 'ohMuL2Eta')
+        # reco muons
+        self.nRecoMu = getattr(c, 'NrecoMuon')
+        self.recoMuPt = getattr(c, 'recoMuonPt')
+        self.recoMuPhi = getattr(c, 'recoMuonPhi')
+        self.recoMuEta = getattr(c, 'recoMuonEta')
         # self.MuL2Nhits = getattr(c, 'ohMuL2Nhits') to be investigated
         # self.MuL2Nstat = getattr(c, 'ohMuL2Nstat') ditto
         self.MuL2Pt = getattr(c, 'ohMuL2Pt')
@@ -75,6 +91,11 @@ class Event:
         self.setPFTaus()
         self.setUnCorJets()
         self.setCorJets()
+        self.setRecoCorJets()
+        self.setRecoElectrons()
+        
+        # self.recoCorHT = self.Ht(self.recoCorJets)
+        self.CorHT = self.Ht(self.CorJets)
 
         # access methods
         # specific objects should probably be in their own class
@@ -102,6 +123,17 @@ class Event:
                                 self.EleR9[i], self.EleDeta[i], self.EleDphi[i]))
         self.Electrons = ele
 
+    def setRecoElectrons(self):
+        recoEle=[]
+        if self.nRecoEle != 0:
+            print 'reco electrons: ' + str( self.nRecoEle)
+        for e in range(self.nRecoEle):
+            recoEle.append(obj.RecoElectron(self.recoElePt[i], self.recoElePhi[i],
+                                            self.recoEleEta[i]))
+            self.recoElectrons = recoEle
+
+        
+
     def setPFTaus(self):
         pfT=[]
         for i in range (self.nPfTau):
@@ -124,23 +156,26 @@ class Event:
                                     self.JetCorCalEta[i], self.JetCorCalEMF[i]))
         self.CorJets = corJ
 
+    def setRecoCorJets(self):
+        RecoCorJ = []
+        # print 'setting reco jets'
+        # print self.nrecoJetCorCal
+        for j in range(self.nrecoJetCorCal):
+            print j
+            RecoCorJ.append(obj.RecoCorJet(self.recoJetCorCalE[i], self.recoJetCorCalPt[i],
+                                           self.recoJetCorCalEta[i], self.recoJetCorCalEMF[i]))
+            self.recoCorJets = RecoCorJ
 
-        # Not doing muons right now...not clear how to define the object. Probably
-        #best to consider various 'levels' (L1, L2, L3)...
 
-    def SumCorHtPassed(self, thresh, jet_thresh = 40., eta_thresh = 3.0):
-        for jet in self.CorJets:
-            # print "jetID: " + str(jet.ID())
-            # print "jet Pt: " + str(jet.getPt())
-            # print 'jet Eta: ' + str(m.fabs(jet.getEta()))
-            if(jet.ID() and jet.getPt() > jet_thresh and m.fabs(jet.getEta()) < eta_thresh):
-                # print 'THIS JET PASSED'
-                self.sumHT += jet.E/m.cosh(jet.getEta())
-                # print 'SumHT: ' + str(sumHT)
-        if self.sumHT >= thresh:
-            return True
-        else:
-            return False
+    def Ht(self, jet_type, jet_thresh = 40, eta_thresh = 3.0):
+        ht = 0
+        for jet in jet_type:
+            if (jet.ID() and jet.getPt() > jet_thresh and m.fabs(jet.getEta()) < eta_thresh):
+                ht += jet.E/m.cosh(jet.getEta())
+        return ht
+
+    
+        
                
     def pfMHTPassed(self, thresh):
         if self.pfMHT >= thresh:

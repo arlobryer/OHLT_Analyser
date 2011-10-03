@@ -15,6 +15,12 @@ class Particle:
 
     def getPt(self):
         return self.Pt
+
+class RecoElectron(Particle):
+    def __init__(self, Pt, Phi, Eta):
+        self.Pt = Pt
+        self.Phi = Phi
+        self.Eta = Eta
     
 
 class Electron(Particle):
@@ -145,4 +151,12 @@ class CorJet(Particle):
         id = (m.fabs(self.Eta) < 2.6 and self.EMF > 1.0E-6
               and self.EMF < 999.)
         return id
+
+
+class RecoCorJet(Particle, CorJet):
+    def __init__(self, E, Pt, eta, emf):
+        self.E = E
+        self.Pt = Pt
+        self.Eta = eta
+        self.EMF = emf
         
