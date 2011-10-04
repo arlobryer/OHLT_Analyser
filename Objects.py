@@ -131,6 +131,10 @@ class pfTau(Particle):
                and h.ParticleMatching(self.Eta, self.Phi, matchParts)):
             return True
 
+class recoPfTau(pfTau):
+    def __init__(self, Pt, eta, phi, leadTrkPt, TrkIso, GammaIso):
+        pfTau.__init__(self, Pt, eta, phi, leadTrkPt, TrkIso, GammaIso)
+
 
 class UnCorJet(Particle):
     def __init__(self, Pt, phi, eta):
@@ -153,7 +157,7 @@ class CorJet(Particle):
         return id
 
 
-class RecoCorJet(Particle, CorJet):
+class RecoCorJet(CorJet):
     def __init__(self, E, Pt, eta, emf):
         self.E = E
         self.Pt = Pt

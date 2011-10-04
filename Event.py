@@ -11,7 +11,8 @@ class Event:
         # L1 trigger bits
         self.L1_HTT100 = getattr(c, "L1_HTT100")
         self.L1_ETM30 = getattr(c, "L1_ETM30")
-        
+
+        self.recoMET = getattr(c, "recoMetCal")
         self.pfMHT = getattr(c, "pfMHT")
         self.sumHT = 0.
         # cor jets
@@ -85,6 +86,14 @@ class Event:
         self.pfTauLeadTrackPt = getattr(c, 'ohpfTauLeadTrackPt')
         self.pfTauTrkIso = getattr(c, 'ohpfTauTrkIso')
         self.pfTauGammaIso = getattr(c, 'ohpfTauGammaIso')
+        #reco taus
+        self.nRecoPfTau = getattr(c, 'NRecoPFTau')
+        self.recoPfTauPt = getattr(c, 'recopfTauPt')
+        self.recoPfTauEta = getattr(c, 'recopfTauEta')
+        self.recoPfTauPhi = getattr(c, 'recopfTauPhi')
+        self.recoPfTauLeadTrackPt = getattr(c, 'recopfTauLeadTrackPt')
+        self.recoPfTauTrkIso = getattr(c, 'recopfTauTrkIso')
+        self.recoPfTauGammaIso = getattr(c, 'recopfTauGammaIso')
 
         # set the collections of objects
         self.setElectrons()
@@ -93,12 +102,13 @@ class Event:
         self.setCorJets()
         self.setRecoCorJets()
         self.setRecoElectrons()
-        
-        # self.recoCorHT = self.Ht(self.recoCorJets)
+        self.setRecoPfTaus()
+        self.recoCorHT = self.Ht(self.recoCorJets)
         self.CorHT = self.Ht(self.CorJets)
-
         # access methods
         # specific objects should probably be in their own class
+    def getRecoMET(self):
+        return self.recoMET
     def getpfMHT(self):
         return self.pfMHT
     def getNjets(self):
@@ -125,12 +135,10 @@ class Event:
 
     def setRecoElectrons(self):
         recoEle=[]
-        if self.nRecoEle != 0:
-            print 'reco electrons: ' + str( self.nRecoEle)
         for e in range(self.nRecoEle):
-            recoEle.append(obj.RecoElectron(self.recoElePt[i], self.recoElePhi[i],
-                                            self.recoEleEta[i]))
-            self.recoElectrons = recoEle
+            recoEle.append(obj.RecoElectron(self.recoElePt[e], self.recoElePhi[e],
+                                            self.recoEleEta[e]))
+        self.recoElectrons = recoEle
 
         
 
@@ -142,6 +150,14 @@ class Event:
                                    self.pfTauGammaIso[i]))
         self.pfTau = pfT
 
+    def setRecoPfTaus(self):
+        rpfT=[]
+        for i in range (self.nRecoPfTau):
+            rpfT.append(obj.recoPfTau(self.recoPfTauPt[i], self.recoPfTauEta[i],
+                                      self.recoPfTauPhi[i], self.recoPfTauLeadTrackPt[i],
+                                      self.recoPfTauTrkIso[i], self.recoPfTauGammaIso[i]))
+        self.recoPfTau = rpfT
+                        
     def setUnCorJets(self):
         uncorJ=[]
         for i in range (self.nJetCal):
@@ -158,13 +174,10 @@ class Event:
 
     def setRecoCorJets(self):
         RecoCorJ = []
-        # print 'setting reco jets'
-        # print self.nrecoJetCorCal
         for j in range(self.nrecoJetCorCal):
-            print j
             RecoCorJ.append(obj.RecoCorJet(self.recoJetCorCalE[i], self.recoJetCorCalPt[i],
                                            self.recoJetCorCalEta[i], self.recoJetCorCalEMF[i]))
-            self.recoCorJets = RecoCorJ
+        self.recoCorJets = RecoCorJ
 
 
     def Ht(self, jet_type, jet_thresh = 40, eta_thresh = 3.0):
@@ -180,6 +193,7 @@ class Event:
     def pfMHTPassed(self, thresh):
         if self.pfMHT >= thresh:
             return True
+        return False
 
     def OneMuonPassed(self, muThresh = [5.,4.,3], dr = 2., iso = 0.,
                       etal2 = 2.5, etal3 = 2.5,
